@@ -1,6 +1,6 @@
 package com.luiz.libraryapi.service;
 
-import com.luiz.libraryapi.api.domain.Book.Book;
+import com.luiz.libraryapi.api.domain.Book;
 import com.luiz.libraryapi.exception.BusinessException;
 import com.luiz.libraryapi.repository.BookRepository;
 import com.luiz.libraryapi.service.impl.BookServiceImpl;
@@ -11,9 +11,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +38,7 @@ public class BookServiceTest {
     public void setUp() {
         this.bookService = new BookServiceImpl(bookRepository);
     }
+
     @Test
     @DisplayName("Deve salvar um livro")
     public void saveBookTest() {
@@ -106,7 +113,7 @@ public class BookServiceTest {
 
     @Test
     @DisplayName("Deve deletar um livro")
-    public  void deleteBookTest() {
+    public void deleteBookTest() {
         Book book = Book.builder().id(1l).build();
 
         org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> bookService.delete(book));
@@ -129,17 +136,29 @@ public class BookServiceTest {
 
     @Test
     @DisplayName("Deve atualizar um livro")
-    public  void updateBookTest() {
-        Book book = createValidBook();
-        book.setId(1l);
-        org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> bookService.update(book));
+    public void updateBookTest() {
+        //cenario
+        long id = 1l;
+        Book updatingBook = Book.builder().id(id).build();
 
-        Mockito.verify(bookRepository, Mockito.times(1)).save(book);
+        Book updatedBook = createValidBook();
+        updatedBook.setId(id);
+        Mockito.when(bookService.update(updatingBook)).thenReturn(updatedBook);
+
+        //execucao
+        Book book = bookService.update(updatingBook);
+
+        //verificacoes
+        assertThat(book.getId()).isEqualTo(updatedBook.getId());
+        assertThat(book.getIsbn()).isEqualTo(updatedBook.getIsbn());
+        assertThat(book.getAuthor()).isEqualTo(updatedBook.getAuthor());
+        assertThat(book.getTittle()).isEqualTo(updatedBook.getTittle());
+
     }
 
     @Test
     @DisplayName("Deve ocorrer erro ao tentar atualizar um livro inexistente")
-    public void atualizarInvalidBookTest() {
+    public void updateInvalidBookTest() {
         Book book = new Book();
 
         org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> bookService.update(book));
@@ -147,5 +166,25 @@ public class BookServiceTest {
         Mockito.verify(bookRepository, Mockito.never()).save(book);
 
 
+    }
+
+    @Test
+    @DisplayName("Deve filtrar livros pelas propriedades")
+    public void findBookTest() {
+        //montagem do cenario
+        Book book = createValidBook();
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        List<Book> books = Arrays.asList(book);
+        Page<Book> page = new PageImpl<>(books, pageRequest, 1);
+        Mockito.when(bookRepository.findAll(Mockito.any(Example.class), Mockito.any(PageRequest.class))).thenReturn(page);
+
+        //execucao
+        Page<Book> result = bookService.find(book, pageRequest);
+
+        //validacoes
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent()).isEqualTo(books);
+        assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
+        assertThat(result.getPageable().getPageSize()).isEqualTo(10);
     }
 }

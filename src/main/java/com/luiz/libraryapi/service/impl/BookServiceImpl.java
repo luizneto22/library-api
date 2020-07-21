@@ -1,9 +1,13 @@
 package com.luiz.libraryapi.service.impl;
 
-import com.luiz.libraryapi.api.domain.Book.Book;
+import com.luiz.libraryapi.api.domain.Book;
 import com.luiz.libraryapi.exception.BusinessException;
 import com.luiz.libraryapi.repository.BookRepository;
 import com.luiz.libraryapi.service.BookService;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 
@@ -43,5 +47,20 @@ public class BookServiceImpl implements BookService {
             throw  new IllegalArgumentException(" Book id cant be null.");
         }
         return bookRepository.save(book);
+    }
+
+    @Override
+    public Page<Book> find(Book filter, Pageable pageRequest) {
+        Example<Book> example = Example.of(filter, ExampleMatcher
+                .matching()
+                .withIgnoreCase()
+                .withIgnoreNullValues()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING));
+        return bookRepository.findAll(example, pageRequest);
+    }
+
+    @Override
+    public Optional<Book> getBookByIsbn(String s) {
+        return Optional.empty();
     }
 }

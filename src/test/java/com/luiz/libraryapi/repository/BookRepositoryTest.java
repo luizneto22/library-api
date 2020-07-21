@@ -1,6 +1,6 @@
 package com.luiz.libraryapi.repository;
 
-import com.luiz.libraryapi.api.domain.Book.Book;
+import com.luiz.libraryapi.api.domain.Book;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,7 +63,32 @@ public class BookRepositoryTest {
 
         Optional<Book> foundBook = bookRepository.findById(book.getId());
 
-
         assertThat(foundBook.isPresent()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Deve salvar um livro")
+    public void saveBookTest(){
+        Book book = createNewBook();
+
+        Book savedBook = bookRepository.save(book);
+
+        assertThat(savedBook.getIsbn()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Deve deletar um livro")
+    public void deleteBookTest() {
+        //montagem do cenario, onde pecisa de u
+        Book book = createNewBook();
+        //testEntityManager.persist(book);
+        bookRepository.save(book);
+
+        Book foundBook = testEntityManager.find(Book.class, book.getId());
+
+        bookRepository.delete(foundBook);
+
+        Book deletedBook = testEntityManager.find(Book.class, book.getId());
+        assertThat(deletedBook).isNull();
     }
 }

@@ -4,6 +4,7 @@ import com.luiz.libraryapi.exception.BusinessException;
 import lombok.Data;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,5 +27,10 @@ public class ApiErrors {
     public ApiErrors(BusinessException ex) {
         this.errors = new ArrayList<>();
         errors.add(ex.getMessage());
+    }
+
+    public ApiErrors(ResponseStatusException ex) {
+        this.errors = new ArrayList<>();
+        errors.add(ex.getReason());
     }
 }

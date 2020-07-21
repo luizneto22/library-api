@@ -1,5 +1,4 @@
-package com.luiz.libraryapi.api.domain.Book;
-
+package com.luiz.libraryapi.api.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -14,7 +14,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Entity
 @Table
-public class Book {
+public class Loan {
 
     @Id
     @Column
@@ -22,12 +22,18 @@ public class Book {
     private Long id;
 
     @Column
-    private String tittle;
-
-    @Column
-    private String author;
-
-    @Column
     private String isbn;
+
+    @Column
+    private String customer;
+
+    @OneToOne
+    private Book book;
+
+    @Column
+    private LocalDate loanDate;
+
+    @Column
+    private Boolean returned;
 
 }
